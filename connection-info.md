@@ -3,15 +3,15 @@
 ## 仓库地址
 
 ```
-ssh://Administrator@192.168.21.1/D:/GitRepos/lab-materials.git
+ssh://Administrator@192.168.1.114/D:/GitRepos/lab-materials.git
 ```
 
-> **注意**：当前本机局域网 IP 为 `192.168.21.1`，如果 IP 变动，需要同步更新队友的仓库地址。
+> **注意**：当前本机局域网 IP 为 `192.168.1.114`，如果 IP 变动，需要同步更新队友的仓库地址。
 
 ## 当前用户名
 
 - **用户名**：`Administrator`
-- **主机**：`192.168.21.1`
+- **主机**：`192.168.1.114`
 - **端口**：`22`（SSH 默认）
 
 ## 认证方式
@@ -33,7 +33,7 @@ Add-Content -Path "$env:USERPROFILE\.ssh\authorized_keys" -Value $teammateKey -E
 ## 队友克隆仓库
 
 ```bash
-git clone ssh://Administrator@192.168.21.1/D:/GitRepos/lab-materials.git
+git clone ssh://Administrator@192.168.1.114/D:/GitRepos/lab-materials.git
 ```
 
 ## 工作流程（Squash Merge）
@@ -63,6 +63,6 @@ git push origin main
 ## 注意事项
 
 1. **台式机需要保持开机**，队友才能 pull/push。
-2. **校园网内访问**：确保台式机和队友的电脑在同一个局域网（192.168.21.x 网段）。
+2. **校园网内访问**：确保台式机和队友的电脑在同一个局域网（192.168.1.x 网段）。
 3. **IP 变动**：如果台式机 IP 变化，需要更新仓库地址。可以在路由器设置静态 IP 绑定。
 4. **备份**：定期备份 `D:\GitRepos\lab-materials.git` 目录。
