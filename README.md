@@ -17,7 +17,7 @@
 1. **Fork 本仓库**（点右上角 Fork 按钮）
 2. **克隆你 Fork 的仓库**：
    ```bash
-   git clone https://github.com/你的用户名/LAB-MATERIALS.git
+   git clone https://github.com/你的用户名/Embedded-Materials.git
    ```
 3. 按 [CONTRIBUTING.md](./CONTRIBUTING.md) 的流程提交
 
