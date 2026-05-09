@@ -1,4 +1,4 @@
-# LAB-MATERIALS
+# Embedded-Materials
 
 > 硬协嵌入式小组公共资料库
 
@@ -21,7 +21,7 @@
    ```
 3. 按 [CONTRIBUTING.md](./CONTRIBUTING.md) 的流程提交
 
-> 不需要 SSH 密钥，不需要管理员授权。Fork 后就是你的仓库，改完提 PR 即可。
+> 不需要管理员授权。Fork 后就是你的仓库，改完提 PR 即可。
 
 ---
 
