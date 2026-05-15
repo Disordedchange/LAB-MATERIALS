@@ -1,52 +1,51 @@
 @echo off
-chcp 936 >nul
 setlocal EnableDelayedExpansion
 
 echo ==========================================
-echo   Embedded-Main 仓库一键提交脚本
+echo   Embedded-Main Auto Submit Script
 echo ==========================================
 echo.
 
-REM 检查是否在 git 仓库中
+REM Check if in git repo
 git rev-parse --git-dir >nul 2>&1
 if errorlevel 1 (
-    echo [错误] 当前目录不是 git 仓库，请进入 Embedded-Main 文件夹后运行此脚本。
+    echo [ERROR] Not a git repo. Please run this script inside Embedded-Main folder.
     pause
     exit /b 1
 )
 
-REM 获取仓库信息
+REM Get repo info
 for /f "tokens=*" %%a in ('git remote get-url origin 2^>nul') do set REMOTE_URL=%%a
 for /f "tokens=*" %%a in ('git branch --show-current') do set CURRENT_BRANCH=%%a
 
-echo [信息] 远程仓库: %REMOTE_URL%
-echo [信息] 当前分支: %CURRENT_BRANCH%
+echo [INFO] Remote: %REMOTE_URL%
+echo [INFO] Branch: %CURRENT_BRANCH%
 echo.
 
-REM 检查是否有未提交的更改
+REM Check for changes
 for /f %%a in ('git status --porcelain ^| find /c /v ""') do set CHANGES=%%a
 if %CHANGES%==0 (
-    echo [提示] 没有检测到更改，无需提交。
+    echo [TIP] No changes detected. Nothing to commit.
     pause
     exit /b 0
 )
 
-echo [信息] 检测到 %CHANGES% 个更改文件：
+echo [INFO] Found %CHANGES% changed file(s):
 git status --short
 echo.
 
-REM 询问提交方式
-echo 请选择提交方式：
-echo   1. 提交到 Fork 仓库并创建 PR（推荐，适合大多数人）
-echo   2. 直接推送到主仓库（仅限维护人）
-set /p SUBMIT_TYPE="请输入选项 (1/2): "
+REM Ask submit mode
+echo Select submit mode:
+echo   1. Fork + PR (recommended for most users)
+echo   2. Direct push to main (maintainers only)
+set /p SUBMIT_TYPE="Enter option (1/2): "
 
 if "%SUBMIT_TYPE%"=="2" (
     echo.
-    echo [警告] 您选择了直接推送到主仓库，请确认您是维护人。
-    set /p CONFIRM="确认继续? (y/n): "
+    echo [WARN] You chose direct push. Make sure you are a maintainer.
+    set /p CONFIRM="Continue? (y/n): "
     if /i not "!CONFIRM!"=="y" (
-        echo [取消] 操作已取消。
+        echo [CANCEL] Operation cancelled.
         pause
         exit /b 0
     )
@@ -54,126 +53,125 @@ if "%SUBMIT_TYPE%"=="2" (
     goto DO_COMMIT
 )
 
-REM 默认 Fork + PR 流程
-REM 检查是否配置了 upstream
+REM Default: Fork + PR flow
+REM Check upstream
 git remote get-url upstream >nul 2>&1
 if errorlevel 1 (
     echo.
-    echo [提示] 未配置上游仓库，正在自动配置...
+    echo [TIP] Upstream not configured. Auto-configuring...
     git remote add upstream https://github.com/dev-change/Embedded-Main.git
     if errorlevel 1 (
-        echo [错误] 配置上游仓库失败，请手动执行：
+        echo [ERROR] Failed to add upstream. Please run manually:
         echo   git remote add upstream https://github.com/dev-change/Embedded-Main.git
         pause
         exit /b 1
     )
-    echo [成功] 上游仓库已配置。
+    echo [OK] Upstream configured.
 )
 
-REM 同步上游仓库
+REM Sync upstream
 echo.
-echo [步骤 1/5] 同步上游仓库最新代码...
+echo [Step 1/5] Syncing with upstream...
 git fetch upstream
 if errorlevel 1 (
-    echo [错误] 获取上游更新失败，请检查网络连接。
+    echo [ERROR] Failed to fetch upstream. Check network.
     pause
     exit /b 1
 )
 
-REM 检查是否有冲突
+REM Check if behind
 git merge-base --is-ancestor upstream/main HEAD
 if errorlevel 1 (
-    echo [警告] 您的分支落后于上游，建议先同步：
+    echo [WARN] Your branch is behind upstream. Sync recommended:
     echo   git pull upstream main
-    set /p SYNC="是否自动同步? (y/n): "
+    set /p SYNC="Auto sync now? (y/n): "
     if /i "!SYNC!"=="y" (
         git pull upstream main
         if errorlevel 1 (
-            echo [错误] 同步失败，可能存在冲突，请手动解决。
+            echo [ERROR] Sync failed. Conflict may exist. Resolve manually.
             pause
             exit /b 1
         )
-        echo [成功] 同步完成。
+        echo [OK] Sync complete.
     )
 )
 
 :DO_COMMIT
-REM 询问 commit message
+REM Ask for commit message
 echo.
-echo [步骤 2/5] 请输入提交说明（简要描述本次修改）：
-set /p COMMIT_MSG="提交说明: "
+echo [Step 2/5] Enter commit message (brief description):
+set /p COMMIT_MSG="Message: "
 
 if "%COMMIT_MSG%"=="" (
-    echo [错误] 提交说明不能为空。
+    echo [ERROR] Commit message cannot be empty.
     pause
     exit /b 1
 )
 
-REM 添加所有更改
+REM Add files
 echo.
-echo [步骤 3/5] 添加更改文件...
+echo [Step 3/5] Adding files...
 git add -A
 if errorlevel 1 (
-    echo [错误] 添加文件失败。
+    echo [ERROR] Failed to add files.
     pause
     exit /b 1
 )
-echo [成功] 文件已添加到暂存区。
+echo [OK] Files staged.
 
-REM 提交
+REM Commit
 echo.
-echo [步骤 4/5] 创建提交...
+echo [Step 4/5] Creating commit...
 git commit -m "%COMMIT_MSG%"
 if errorlevel 1 (
-    echo [错误] 提交失败，请检查是否有冲突或其他问题。
+    echo [ERROR] Commit failed. Check for conflicts.
     pause
     exit /b 1
 )
-echo [成功] 提交已创建。
+echo [OK] Commit created.
 
-REM 推送
+REM Push
 if "%SUBMIT_TYPE%"=="2" (
     echo.
-    echo [步骤 5/5] 推送到主仓库...
+    echo [Step 5/5] Pushing to main...
     git push origin main
     if errorlevel 1 (
-        echo [错误] 推送失败。
-        echo [建议] 可能原因：
-        echo   1. 分支受保护，需要通过 PR 合并
-        echo   2. 远程有更新，需要先 pull
-        echo   3. 网络问题
+        echo [ERROR] Push failed.
+        echo [HINT] Possible reasons:
+        echo   1. Branch is protected, use PR instead
+        echo   2. Remote has new commits, pull first
+        echo   3. Network issue
         pause
         exit /b 1
     )
-    echo [成功] 已推送到主仓库！
+    echo [OK] Pushed to main!
 ) else (
     echo.
-    echo [步骤 5/5] 推送到您的 Fork...
+    echo [Step 5/5] Pushing to your Fork...
     git push origin %CURRENT_BRANCH%
     if errorlevel 1 (
-        echo [错误] 推送失败。
-        echo [建议] 可能原因：
-        echo   1. 未配置 SSH/HTTPS 认证
-        echo   2. 网络问题
-        echo   3. 需要先 Fork 仓库
+        echo [ERROR] Push failed.
+        echo [HINT] Possible reasons:
+        echo   1. SSH/HTTPS auth not configured
+        echo   2. Network issue
+        echo   3. Need to Fork the repo first
         pause
         exit /b 1
     )
-    echo [成功] 已推送到您的 Fork！
+    echo [OK] Pushed to your Fork!
     echo.
     echo ==========================================
-    echo   下一步：创建 Pull Request
+    echo   Next: Create Pull Request
 echo ==========================================
     echo.
-    echo 请访问以下链接创建 PR：
+    echo Visit this link to create PR:
     echo   https://github.com/dev-change/Embedded-Main/compare
     echo.
-    echo 或者运行以下命令打开浏览器：
-    echo   start https://github.com/dev-change/Embedded-Main/compare
+    echo Or run: start https://github.com/dev-change/Embedded-Main/compare
 )
 
 echo.
 echo ==========================================
-echo   提交完成！
+echo   Done!
 echo ==========================================
 pause
